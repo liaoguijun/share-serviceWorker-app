@@ -29,7 +29,7 @@ self.addEventListener('fetch', function(event) {
   )
 });
 
-// self.addEventListener('message', function(event) {
-//   console.log('service worker, message', event)
-//   event.source.postMessage('this message is from sw.js to page');  // 向主线程传递信息
-// });
+self.addEventListener('message', function(event) {
+  console.log('service worker, message', event)
+  event.source.postMessage('this message is from sw.js to page');  // 向主线程传递信息
+});
