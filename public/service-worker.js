@@ -19,14 +19,14 @@ self.addEventListener('activate', function(event) {
 // 如果缓存中已经存在已经有请求的数据就直接用缓存，否则去请求数据
 self.addEventListener('fetch', function(event) {
   console.log('service worker, fetch', event)
-  event.respondWith(
-    caches.match(event.request).then(function(response) {
-      if(response) {
-        return response
-      }
-      console.log('fetch source')
-    })
-  )
+  // event.respondWith(
+  //   caches.match(event.request).then(function(response) {
+  //     if(response) {
+  //       return response
+  //     }
+  //     console.log('fetch source')
+  //   })
+  // )
 });
 
 self.addEventListener('message', function(event) {

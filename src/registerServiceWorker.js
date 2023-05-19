@@ -123,6 +123,6 @@ export async function update() {
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.onmessage = async (e) => {
-        console.log(e)
+        console.log('onmessage', e)
     };
 }
