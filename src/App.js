@@ -3,6 +3,7 @@ import "./App.css";
 import libController from "./LibController";
 import useSwapMarketTicker from "./hooks/useSwapMarketTicker";
 import ws from "./ws";
+import { unregister } from "./registerServiceWorker";
 
 function App() {
   useSwapMarketTicker();
@@ -33,25 +34,30 @@ function App() {
     );
   };
   const close = () => {
-    ws.removeChannel(
-      {
-        op: "sub",
-        topic: "swap.market.ticker",
-        params: {
-          contractCode: "BTC-USDT",
-        },
-      },
-      fn
-    );
+    // ws.removeChannel(
+    //   {
+    //     op: "sub",
+    //     topic: "swap.market.ticker",
+    //     params: {
+    //       contractCode: "BTC-USDT",
+    //     },
+    //   },
+    // );
   };
+
+  useEffect(() => {
+    return () => {
+      unregister()
+    }
+  }, [])
 
   return (
     <>
       <div className="App" onClick={start}>
-        <button>start</button>
+        <button>订阅 ws</button>
       </div>
       <div className="App" onClick={close}>
-        <button>close</button>
+        <button>清除订阅 ws</button>
       </div>
     </>
   );

@@ -1,4 +1,4 @@
-import pako from 'pako'
+import pako from "pako";
 
 const WEBSOCKET_URL = "wss://pre.fameex.com/swap";
 
@@ -48,7 +48,6 @@ class RealSocket {
     for (let va in this.EventObj) {
       this.SendMsgAry.push(this.EventObj[va].msg);
     }
-    console.log("SendMsgAry %o", this.SendMsgAry);
     this.send();
   }
 
@@ -71,7 +70,7 @@ class RealSocket {
       //接收blob对象
       const reader = new FileReader();
       reader.readAsArrayBuffer(blob); //讲blob对象数据转化成ArrayBuffer类数组
-      let _this = this
+      let _this = this;
       reader.onload = function (e) {
         if (e.target?.readyState == FileReader.DONE) {
           const data = pako.inflate(reader?.result); //使用pako.js将ArrayBuffer类数组转化成Uint8Array
@@ -84,14 +83,16 @@ class RealSocket {
           if (jsonData && jsonData.op == "notify") {
             // 1）service worker
             if ("serviceWorker" in navigator) {
-              navigator.serviceWorker.controller.postMessage(jsonData);
+              try {
+                navigator.serviceWorker.controller.postMessage(jsonData);
+              }catch(err) {}
             }
             // 2) 回调
             const mark = _this.getMark(jsonData);
             if (_this.EventObj[mark]) {
               _this.EventObj[mark](jsonData);
             } else {
-              console.error('对应事件不存在');
+              console.info("对应事件不存在");
             }
           }
         }
@@ -145,7 +146,7 @@ class RealSocket {
 
   //添加频道
   addChannel = (message, callback) => {
-    const msg = {  ...message };
+    const msg = { ...message };
     this.EventObj[this.getMark(msg)] = callback;
     this.EventObj[this.getMark(msg)].msg = msg;
     this.SendMsgAry.push(msg);
@@ -164,7 +165,7 @@ class RealSocket {
   getMark(message) {
     if (!message || !message.op) return "";
     const { op, topic } = message;
-    let result = [topic ? topic: op];
+    let result = [topic ? topic : op];
     return result.join("$$");
   }
 }

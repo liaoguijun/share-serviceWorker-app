@@ -53,7 +53,7 @@ export default async function register() {
 }
 
 async function registerValidSW(swUrl) {
-    console.log('[SW] register');
+    // console.log('[SW] register');
     try {
         const registration = await navigator.serviceWorker.register(swUrl);
         registration.onupdatefound = () => {
@@ -79,11 +79,11 @@ async function registerValidSW(swUrl) {
     } catch (error) {
         console.error('[SW] Error during service worker registration: ', error);
     }
-    console.log('[SW] register complete', navigator.serviceWorker, navigator.serviceWorker.controller);
+    // console.log('[SW] register complete', navigator.serviceWorker, navigator.serviceWorker.controller);
 }
 
 async function checkValidServiceWorker(swUrl) {
-    console.log('[SW] checkValid');
+    // console.log('[SW] checkValid');
     // Check if the service worker can be found. If it can't reload the page.
     try {
         const response = await fetch(swUrl);
@@ -124,7 +124,8 @@ export async function update() {
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.onmessage = async (e) => {
-        console.log('onmessage', e)
-        libController.emit('wsPush', e)
+        try {
+            libController.emit(e.data.topic, e.data)
+        }catch(err) {}
     };
 }

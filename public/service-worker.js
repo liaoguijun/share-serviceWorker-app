@@ -18,7 +18,7 @@ self.addEventListener('activate', function(event) {
 // 拦截所有请求事件
 // 如果缓存中已经存在已经有请求的数据就直接用缓存，否则去请求数据
 self.addEventListener('fetch', function(event) {
-  console.log('service worker, fetch', event)
+  // console.log('service worker, fetch', event)
   // event.respondWith(
   //   caches.match(event.request).then(function(response) {
   //     if(response) {
@@ -31,5 +31,6 @@ self.addEventListener('fetch', function(event) {
 
 self.addEventListener('message', function(event) {
   // console.log('service worker, message', event)
+  // todo 做大量计算，不可操作dom
   event.source.postMessage(event.data);  // 向主线程传递信息
 });
