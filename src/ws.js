@@ -1,4 +1,6 @@
-const WEBSOCKET_URL = "wss://www.fameex.cc/swap";
+import pako from 'pako'
+
+const WEBSOCKET_URL = "wss://pre.fameex.com/swap";
 
 // interface SubscribeData {
 //   op: 'sub' | 'ping' | 'req';
@@ -17,7 +19,7 @@ class RealSocket {
   PingPongTime = 0;
 
   constructor() {
-    this.init()
+    this.init();
   }
 
   init() {
@@ -29,11 +31,10 @@ class RealSocket {
   }
 
   onOpen() {
-    console.log('ws Open')
-    console.log('this.ws', this.ws)
+    console.log("ws Open");
     // this.TaskInterval = setInterval(() => {
     //   if (this.PingPongTime && Date.now() - this.PingPongTime > heartBeatTime) {
-        // this.isReady = false;
+    // this.isReady = false;
 
     //     this.TaskInterval && clearInterval(this.TaskInterval);
     //     return this.retry();
@@ -65,14 +66,36 @@ class RealSocket {
       //     this.PingPongTime = Date.now();
       //     return;
       //   }
-        console.log('获取到ws消息-------------')
 
-        // const { noticeType, noticeInfo } = json;
-        // const _event = noticeTypeMap.get(noticeType);
-        // if (!_event) return;
-        // if (!this.EventObj[_event]) return;
-        // this.EventObj[_event](noticeInfo);
-      // }
+      const blob = data;
+      //接收blob对象
+      const reader = new FileReader();
+      reader.readAsArrayBuffer(blob); //讲blob对象数据转化成ArrayBuffer类数组
+      let _this = this
+      reader.onload = function (e) {
+        if (e.target?.readyState == FileReader.DONE) {
+          const data = pako.inflate(reader?.result); //使用pako.js将ArrayBuffer类数组转化成Uint8Array
+          const strData = String.fromCharCode.apply(
+            null,
+            Array.from(new Uint16Array(data))
+          ); //转化成JSON字符串
+          const jsonData = JSON.parse(strData);
+
+          if (jsonData && jsonData.op == "notify") {
+            // 1）service worker
+            if ("serviceWorker" in navigator) {
+              navigator.serviceWorker.controller.postMessage(jsonData);
+            }
+            // 2) 回调
+            const mark = _this.getMark(jsonData);
+            if (_this.EventObj[mark]) {
+              _this.EventObj[mark](jsonData);
+            } else {
+              console.error('对应事件不存在');
+            }
+          }
+        }
+      };
     } catch (e) {
       console.log("【catch websocket onmessage】%o", e);
     }
@@ -115,8 +138,6 @@ class RealSocket {
   }
 
   emit() {
-    console.log('this.isReady', this.isReady)
-    console.log('this.ws', this.ws)
     if (this.isReady) return this.send();
     if (this.ws) return;
     this.init();
@@ -124,7 +145,7 @@ class RealSocket {
 
   //添加频道
   addChannel = (message, callback) => {
-    const msg = { event: "addChannel", ...message };
+    const msg = {  ...message };
     this.EventObj[this.getMark(msg)] = callback;
     this.EventObj[this.getMark(msg)].msg = msg;
     this.SendMsgAry.push(msg);
@@ -133,7 +154,7 @@ class RealSocket {
 
   //移除频道
   removeChannel = (message) => {
-    const msg = { event: "removeChannel", ...message };
+    const msg = { ...message };
     delete this.EventObj[this.getMark(msg)];
     this.SendMsgAry.push(msg);
     this.emit();
@@ -141,9 +162,9 @@ class RealSocket {
 
   // 生成订阅标识
   getMark(message) {
-    if (!message || !message.op) return '';
+    if (!message || !message.op) return "";
     const { op, topic } = message;
-    let result = [op, topic];
+    let result = [topic ? topic: op];
     return result.join("$$");
   }
 }

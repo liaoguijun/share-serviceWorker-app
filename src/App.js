@@ -1,9 +1,11 @@
 import { useEffect } from "react";
 import "./App.css";
 import libController from "./LibController";
-import ws from './ws'
+import useSwapMarketTicker from "./hooks/useSwapMarketTicker";
+import ws from "./ws";
 
 function App() {
+  useSwapMarketTicker();
 
   function handle() {
     if ("serviceWorker" in navigator) {
@@ -14,22 +16,42 @@ function App() {
     }
   }
 
-  function fn() {
-    console.log('ws push pingpong', 222222)
+  function fn(data) {
+    console.log('[swap.market.ticker] from ws direct', data);
   }
 
-  useEffect(() => {
-    const message = {op: 'ping'}
-    ws.addChannel(message, fn)
-    return () => {
-      ws.removeChannel(message)
-    }
-  }, []);
+  const start = () => {
+    ws.addChannel(
+      {
+        op: "sub",
+        topic: "swap.market.ticker",
+        params: {
+          contractCode: "BTC-USDT",
+        },
+      },
+      fn
+    );
+  };
+  const close = () => {
+    ws.removeChannel(
+      {
+        op: "sub",
+        topic: "swap.market.ticker",
+        params: {
+          contractCode: "BTC-USDT",
+        },
+      },
+      fn
+    );
+  };
 
   return (
     <>
-      <div className="App" onClick={handle}>
-        <button>handle</button>
+      <div className="App" onClick={start}>
+        <button>start</button>
+      </div>
+      <div className="App" onClick={close}>
+        <button>close</button>
       </div>
     </>
   );

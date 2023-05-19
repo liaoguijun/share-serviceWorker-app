@@ -5,13 +5,9 @@ class LibController extends EventEmitter {
         super();
     }
 
-    clientUpdate = update => {
-        this.emit('clientUpdate', update);
-    };
-
-    logOut() {
-        this.emit('loginOut', 'loginOut');
-    }
+    // wsPush(...args){
+    //     this.emit('wsPush', ...args)
+    // }
 }
 
 const controller = new LibController();
